@@ -1,32 +1,32 @@
 package order
 
 import (
-	"database/sql"
-	"encoding/json"
+	"github.com/go-chi/render"
 	"net/http"
+	"tradeExecutor"
 )
 
-type Api struct {
+type api struct {
 	next Service
 }
 
-func NewApi(db *sql.DB) *Api {
-	return &Api{
-		next: NewLogging(db),
+func NewApi(db tradeExecutor.DataBase, c chan<- *Order) *api {
+	return &api{
+		next: NewLogging(db, c),
 	}
 }
 
-func (a Api) create(w http.ResponseWriter, r *http.Request) {
-	var o *Order
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&o)
-	if err != nil {
+func (a api) create(w http.ResponseWriter, r *http.Request) {
+	req := new(Order)
+	if err := render.Bind(r, req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = a.next.create(o)
+	err := a.next.create(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(nil)
+	w.WriteHeader(http.StatusAccepted)
+	return
 }

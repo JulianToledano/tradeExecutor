@@ -1,17 +1,16 @@
 package order
 
 import (
-	"database/sql"
-	"fmt"
 	"time"
+	"tradeExecutor"
 )
 
 type dao struct {
-	db    *sql.DB
+	db    tradeExecutor.DataBase
 	table string
 }
 
-func newDao(db *sql.DB) *dao {
+func newDao(db tradeExecutor.DataBase) *dao {
 	return &dao{
 		db:    db,
 		table: "orders",
@@ -19,9 +18,7 @@ func newDao(db *sql.DB) *dao {
 }
 
 func (d dao) persist(o *Order) (err error) {
-	fmt.Sprint()
-	_, err = d.db.Exec(
+	return d.db.Insert(
 		"INSERT INTO orders(size, price, symbol, buy, date) values(?,?,?,?,?)",
 		o.Size, o.Price, o.Symbol, o.Buy, time.Now().Format("2006.01.02 15:04:05"))
-	return
 }

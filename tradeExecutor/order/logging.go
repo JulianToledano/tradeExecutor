@@ -1,24 +1,25 @@
 package order
 
 import (
-	"database/sql"
-	"fmt"
+	"tradeExecutor"
+	"tradeExecutor/logger"
 )
 
 type logging struct {
 	next Service
 }
 
-func NewLogging(db *sql.DB) *logging {
+func NewLogging(db tradeExecutor.DataBase, c chan<- *Order) *logging {
 	return &logging{
-		next: NewService(db),
+		next: NewService(db, c),
 	}
 }
 
 func (l logging) create(o *Order) (err error) {
+	logger.Infof(`[ORDER] [Api] [create]`)
 	err = l.next.create(o)
 	if err != nil {
-		fmt.Println("ERROR creating order")
+		logger.Errorf(`[ORDER] [Api] [create] [%v]`, err)
 	}
 	return
 }
