@@ -14,7 +14,7 @@ func ReadConfig(tomlData string) (c *configuration, err error) {
 		LogFile:    "/tmp/tradeExecutor.log",
 		LogLevel:   "INFO",
 		ServerAddr: "0.0.0.0:8003",
-		Db:         "deploy/foo.db",
+		Db:         "/tmp/tradeExecutor.db",
 	}
 	_, err = toml.DecodeFile(tomlData, &c)
 	return

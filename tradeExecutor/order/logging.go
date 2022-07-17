@@ -23,3 +23,12 @@ func (l logging) create(o *Order) (err error) {
 	}
 	return
 }
+
+func (l logging) list() (orders []Order, err error) {
+	logger.Infof(`[ORDER] [Api] [list]`)
+	orders, err = l.next.list()
+	if err != nil {
+		logger.Errorf(`[ORDER] [Api] [list] [%v]`, err)
+	}
+	return
+}

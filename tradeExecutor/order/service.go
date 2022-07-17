@@ -6,6 +6,7 @@ import (
 
 type Service interface {
 	create(*Order) error
+	list() ([]Order, error)
 }
 
 type service struct {
@@ -19,7 +20,14 @@ func NewService(db tradeExecutor.DataBase, c chan<- *Order) *service {
 		d: newDao(db),
 	}
 }
-func (s service) create(o *Order) error {
-	s.c <- o
-	return s.d.persist(o)
+func (s service) create(o *Order) (err error) {
+	err = s.d.persist(o)
+	if err == nil {
+		s.c <- o
+	}
+	return
+}
+
+func (s service) list() ([]Order, error) {
+	return s.d.list()
 }

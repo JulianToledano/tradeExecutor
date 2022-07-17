@@ -1,6 +1,7 @@
 package order
 
 import (
+	"fmt"
 	"github.com/go-chi/render"
 	"net/http"
 	"tradeExecutor"
@@ -28,5 +29,14 @@ func (a api) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
-	return
+}
+
+func (a api) list(w http.ResponseWriter, r *http.Request) {
+	orders, err := a.next.list()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
+	fmt.Fprintln(w, orders)
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	//_ "github.com/mattn/go-sqlite3"
 	"os"
 	"tradeExecutor/config"
@@ -16,9 +15,8 @@ import (
 func main() {
 	configFile := flag.String("config", "config.toml", "configuration")
 	flag.Parse()
-
 	c, err := config.ReadConfig(*configFile)
-	fmt.Println(c.LogFile)
+
 	logFile, err := os.OpenFile(c.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		logger.Fatalf("could not set logFile %s", c.LogFile)
@@ -36,7 +34,7 @@ func main() {
 	}
 
 	oChan := make(chan *order.Order)
-	e := engine.NewTradeExecutor(oChan)
+	e := engine.NewOrderEngine("binance", oChan, dataBase)
 	go e.Execute()
 
 	app := server.NewApp(dataBase)

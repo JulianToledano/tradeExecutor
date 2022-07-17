@@ -5,19 +5,18 @@ import (
 	"net/http"
 	"strings"
 	"tradeExecutor/logger"
-	"tradeExecutor/order"
 )
 
 const wssEndpoint = "wss://stream.binancefuture.com/ws/"
 
 type BinanceWss struct {
-	o       *order.Order
+	symbol  string
 	baseUrl string
 }
 
-func NewBinanceWss(o *order.Order) *BinanceWss {
+func NewBinanceWss(symbol string) *BinanceWss {
 	return &BinanceWss{
-		o:       o,
+		symbol:  symbol,
 		baseUrl: wssEndpoint,
 	}
 }
@@ -35,13 +34,14 @@ func (bs BinanceWss) Dial(urlStr string) (*websocket.Conn, *http.Response, error
 }
 
 func (bs BinanceWss) ReadSocket(ch chan<- []byte) {
-	url := bs.bookTickerUrl(strings.ToLower(bs.o.Symbol))
-	c, _, err := bs.Dial(url)
 	defer func() {
 		logger.Warnf(`[WSS.BINANCE] [BinanceWss] [ReadSocket] [CLOSING CHANNEL]`)
 		close(ch)
 	}()
+	url := bs.bookTickerUrl(strings.ToLower(bs.symbol))
+	c, _, err := bs.Dial(url)
 	if err != nil {
+		logger.Errorf(`[WSS.BINANCE] [BinanceWss] [ReadSocket] [Dial] [%v]`, err)
 		return
 	}
 	logger.Infof(`[WSS.BINANCE] [BinanceWss] [ReadSocket] [%s]`, url)
@@ -49,9 +49,8 @@ func (bs BinanceWss) ReadSocket(ch chan<- []byte) {
 		_, message, err := c.ReadMessage()
 		if err != nil {
 			logger.Errorf(`[WSS.BINANCE] [BinanceWss] [ReadSocket] [%v]`, err)
-			break
+			continue
 		}
 		ch <- message
 	}
-
 }
